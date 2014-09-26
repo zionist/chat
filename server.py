@@ -2,30 +2,58 @@
 
 from flask import Flask
 from flask import request, make_response
-
 import time
+
 app = Flask(__name__)
 
-@app.route("/", methods=["POST", "GET", "OPTIONS"])
-def new():
-    print "# "
-    # print request.headers
-    print request.get_json()
-    print request.headers
-    headers = {
-        'Access-Control-Allow-Origin': '*',
-        'Access-Control-Allow-Methods': 'POST, GET, OPTIONS',
-        'Access-Control-Max-Age': '100',
-        'Access-Control-Allow-Headers':
-            'origin, x-csrftoken, content-type, accept',
+messages = {}
+names = []
+options_headers = {
+    'Access-Control-Allow-Origin': '*',
+    'Access-Control-Allow-iOrigin': '*',
+    'Access-Control-Allow-Methods': 'POST, GET, OPTIONS',
+    'Access-Control-Max-Age': '100',
+    'Access-Control-Allow-Headers':
+        'origin, x-csrftoken, content-type, accept',
     }
-    if request.method == "OPTIONS":
-        return make_response(("", 200, headers))
-    # print request.data
-    # print request.form.get('data')
-    return make_response(("data", 200, headers))
 
-# Access-Control-Allow-Origin: *
+@app.route("/send", methods=["POST", "OPTIONS"])
+def new():
+    if request.get_json():
+        print request.get_json()
+    if request.method == "OPTIONS":
+        return make_response(("", 200, options_headers))
+    return make_response(("", 200, options_headers))
+
+@app.route("/login", methods=["POST", "OPTIONS"])
+def login():
+    data = request.get_json()
+    print data
+    if request.method == "OPTIONS":
+        return make_response(("", 200, options_headers))
+    name = data.get("login")
+    if not name:
+        return make_response(("", 500))
+    if name in names:
+        return make_response(("", 403, options_headers))
+    else:
+        names.append(name)
+        print names
+        return make_response(("", 200, options_headers))
+
+@app.route("/logout", methods=["POST", "OPTIONS"])
+def logout():
+    data = request.get_json()
+    if request.method == "OPTIONS":
+        return make_response(("", 200, options_headers))
+    name = data.get("login")
+    if not name:
+        return make_response(("", 500))
+    if name in names:
+        names.remove(name)
+        return make_response(("", 200, options_headers))
+    else:
+        return make_response(("", 204, options_headers))
 
 if __name__ == "__main__":
     app.run()
