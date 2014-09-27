@@ -23,9 +23,8 @@ options_headers = {
 def send():
     if request.get_json():
         data = request.get_json()
-        print data
+        print "# got message %s" % data
         messages.append(data)
-        print messages
     if request.method == "OPTIONS":
         return make_response(("", 200, options_headers))
     return make_response(("", 200, options_headers))
@@ -33,7 +32,6 @@ def send():
 @app.route("/login", methods=["POST", "OPTIONS"])
 def login():
     data = request.get_json()
-    print data
     if request.method == "OPTIONS":
         return make_response(("", 200, options_headers))
     name = data.get("login")
@@ -43,7 +41,6 @@ def login():
         return make_response(("", 403, options_headers))
     else:
         names.append(name)
-        print names
         return make_response(("", 200, options_headers))
 
 @app.route("/logout", methods=["POST", "OPTIONS"])
@@ -61,26 +58,33 @@ def logout():
         return make_response(("", 204, options_headers))
 
 @app.route("/messages/<int:num>", methods=["GET", "OPTIONS"])
-def get_messages():
+def get_messages(num):
+    print "# start get messages"
     if request.method == "OPTIONS":
         return make_response(("", 200, options_headers))
     else:
-        if messages:
-            data = messages[-1]
-        else:
-            data = ""
-        return make_response((json.dumps(data),  200, options_headers))
+        for second in range(10):
+            delta = len(messages) - num
+            print "# delta %s" % delta
+            if delta:
+                print("# we have an new message")
+                data = json.dumps(messages[-delta:])
+                print "# send message %s" % data
+                return make_response((data, 200, options_headers))
+            else:
+                print("# no new messages")
+            time.sleep(1)
+        # return empty response for timeout
+        return make_response(("", 200, options_headers))
+
+
 
 @app.route("/messages/count", methods=["GET", "OPTIONS"])
 def get_messages_count():
     if request.method == "OPTIONS":
         return make_response(("", 200, options_headers))
     else:
-        if messages:
-            data = messages[-1]
-        else:
-            data = ""
-        return make_response((json.dumps(len(messages)),  200, options_headers))
+        return make_response(("%s" % len(messages),  200, options_headers))
 
 @app.route("/history", methods=["GET", "OPTIONS"])
 def get_history():
@@ -89,4 +93,5 @@ def get_history():
     return make_response((json.dumps(messages), 200, options_headers))
 
 if __name__ == "__main__":
+    app.debug = True
     app.run(threaded=True)
