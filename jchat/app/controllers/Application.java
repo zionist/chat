@@ -1,10 +1,12 @@
 package controllers;
 
 import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.node.ObjectNode;
 import common.Constants;
 import models.LoggedUser;
 import models.Message;
 import play.*;
+import play.libs.Json;
 import play.mvc.*;
 import play.db.*;
 
@@ -19,8 +21,8 @@ import java.util.Map;
 public class Application extends Controller {
 
     private static void SetHeaders() {
-        for (String key: Constants.headers.keySet()) {
-            response().setHeader(key, Constants.headers.get(key));
+        for (String key: Constants.HEADERS.keySet()) {
+            response().setHeader(key, Constants.HEADERS.get(key));
         }
     }
 
@@ -36,6 +38,7 @@ public class Application extends Controller {
         JsonNode json = request().body().asJson();
         String login = json.findPath("login").textValue();
         String message = json.findPath("message").textValue();
+        Logger.info("# got message from " + login + " " + message);
         if (login.isEmpty() || message.isEmpty()) {
             return internalServerError("Incorrect message json");
 
@@ -72,14 +75,50 @@ public class Application extends Controller {
     }
 
     public static Result history() {
-        return ok("[{\"login\": \"testlogin\", \"message\": \"test message\"}]");
+        List<Message> msgs = Message.find().orderBy("id").setMaxRows(50).findList();
+        //TODO: make correct json serialisation
+        String answer = "[";
+        for (Message msg: msgs ) {
+            answer += msg.toJson().toString();
+            answer += ",";
+        }
+        answer = answer.substring(0, answer.length() - 1);
+        answer += "]";
+        return ok(answer);
     }
 
+    public static Result getMessages(Integer num) throws InterruptedException {
+        Integer spentTime = 0;
+        while (spentTime < Constants.WAIT_TIMEOUT) {
+            Integer max_rows = Message.find().findRowCount();
+            Integer delta = max_rows - num;
+            if (delta == 0) {
+                // block current thread for one second
+                Thread.sleep(1000);
+                spentTime += 1;
+                continue;
+            } else {
+                List<Message> msgs = Message.find().orderBy("id desc").setMaxRows(delta).findList();
+                String answer = "[";
+                for (Message msg : msgs) {
+                    answer += msg.toJson().toString();
+                    answer += ",";
+                }
+                answer = answer.substring(0, answer.length() - 1);
+                answer += "]";
+                return ok(answer);
+            }
+        }
+        return ok("");
+    }
+
+
     public static Result count() {
+        Integer count = Message.find().findRowCount();
         //LoggedUser user= new LoggedUser();
         //user.setLogin("test1");
         //user.save();
-        List<LoggedUser> users = LoggedUser.find().all();
-        return ok("0" + users.get(0).getLogin());
+        // List<LoggedUser> users = LoggedUser.find().all();
+        return ok(count.toString());
     }
 }

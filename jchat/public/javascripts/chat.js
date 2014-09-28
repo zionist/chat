@@ -3,12 +3,12 @@
 //SERVER_PORT = "5000";
 
 URLS = {
-    "send": "/messages/send",
+    "send": "/send",
     "login": "/login",
     "logout": "/logout",
     // needs last known message num
     "message": "/messages/",
-    "messages_count": "/messages/count",
+    "messages_count": "/count",
     "history": "/history"
 }
 

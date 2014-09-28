@@ -3,9 +3,11 @@ package models;
 import java.util.*;
 import javax.persistence.*;
 
+import com.fasterxml.jackson.databind.node.ObjectNode;
 import play.db.ebean.*;
 import play.data.format.*;
 import play.data.validation.*;
+import play.libs.Json;
 
 @Entity
 public class Message extends Model {
@@ -42,5 +44,12 @@ public class Message extends Model {
 
     public String getLogin() {
         return this.login;
+    }
+
+    public ObjectNode toJson() {
+        ObjectNode result = Json.newObject();
+        result.put("login", getLogin());
+        result.put("message", getMessage());
+        return result;
     }
 }
