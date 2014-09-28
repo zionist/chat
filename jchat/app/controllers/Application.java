@@ -9,14 +9,9 @@ import play.*;
 import play.libs.Json;
 import play.mvc.*;
 import play.db.*;
-
 import views.html.*;
-
 import javax.activation.DataSource;
-import java.util.Dictionary;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 public class Application extends Controller {
 
@@ -38,7 +33,6 @@ public class Application extends Controller {
         JsonNode json = request().body().asJson();
         String login = json.findPath("login").textValue();
         String message = json.findPath("message").textValue();
-        Logger.info("# got message from " + login + " " + message);
         if (login.isEmpty() || message.isEmpty()) {
             return internalServerError("Incorrect message json");
 
@@ -49,8 +43,6 @@ public class Application extends Controller {
         mesg.save();
         return ok();
     }
-
-
 
     public static Result login() {
         if (request().method().equals("OPTIONS")) {
@@ -68,14 +60,44 @@ public class Application extends Controller {
             LoggedUser user= new LoggedUser();
             user.setLogin(login);
             user.save();
+            Message msg = new Message();
+            msg.setLogin(user.getLogin());
+            msg.setMessage("Присоединяется к чату");
+            msg.save();
             return ok();
         } else {
             return forbidden();
         }
     }
 
+    public static Result logout() {
+        if (request().method().equals("OPTIONS")) {
+            SetHeaders();
+            return ok();
+        }
+        JsonNode json = request().body().asJson();
+        String login = json.findPath("login").textValue();
+        if (login.isEmpty()) {
+            return internalServerError("Incorrect logout json");
+
+        }
+        LoggedUser user = LoggedUser.find().where().eq("login", login).findUnique();
+        if (user == null) {
+            return internalServerError();
+        } else {
+            Message msg = new Message();
+            msg.setLogin(user.getLogin());
+            msg.setMessage("Покидает чат");
+            msg.save();
+            user.delete();
+            return ok();
+        }
+    }
+
     public static Result history() {
-        List<Message> msgs = Message.find().orderBy("id").setMaxRows(50).findList();
+        List<Message> msgs = Message.find().orderBy("id desc").
+                setMaxRows(Constants.MAX_ROWS_COUNT).findList();
+        Collections.reverse(msgs);
         //TODO: make correct json serialisation
         String answer = "[";
         for (Message msg: msgs ) {
@@ -99,6 +121,7 @@ public class Application extends Controller {
                 continue;
             } else {
                 List<Message> msgs = Message.find().orderBy("id desc").setMaxRows(delta).findList();
+                Collections.reverse(msgs);
                 String answer = "[";
                 for (Message msg : msgs) {
                     answer += msg.toJson().toString();
@@ -112,13 +135,8 @@ public class Application extends Controller {
         return ok("");
     }
 
-
     public static Result count() {
         Integer count = Message.find().findRowCount();
-        //LoggedUser user= new LoggedUser();
-        //user.setLogin("test1");
-        //user.save();
-        // List<LoggedUser> users = LoggedUser.find().all();
         return ok(count.toString());
     }
 }

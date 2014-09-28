@@ -123,6 +123,7 @@ function logout() {
         data = {
             "login": data
         };
+        $('textarea#chat_area').scrollTop($('textarea#chat_area')[0].scrollHeight);
         send_post_sync(JSON.stringify(data), URLS["logout"])
     }
 }

@@ -11,8 +11,6 @@ import play.data.validation.*;
 @Entity
 public class LoggedUser extends Model {
 
-    private static final long serialVersionUID = 1L;
-
     @Id
     @Constraints.Required
     @Constraints.Max(255)

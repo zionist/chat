@@ -10,6 +10,9 @@ public final class Constants {
     // Wait timeout for send message pause in seconds
     public static final Integer WAIT_TIMEOUT = 60;
 
+    // Main chat window rows count
+    public static final Integer MAX_ROWS_COUNT = 50;
+
     static {
        HEADERS.put("Access-Control-Allow-Origin", "*");
        HEADERS.put("Access-Control-Allow-iOrigin", "*");

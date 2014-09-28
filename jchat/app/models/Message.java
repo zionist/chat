@@ -12,8 +12,6 @@ import play.libs.Json;
 @Entity
 public class Message extends Model {
 
-    private static final long serialVersionUID = 1L;
-
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
