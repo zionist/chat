@@ -1,4 +1,5 @@
 #!/usr/bin/env python
+# -*- coding: utf-8 -*-
 
 import time
 import json
@@ -41,6 +42,8 @@ def login():
         return make_response(("", 403, options_headers))
     else:
         names.append(name)
+        print messages
+        messages.append({"message": u">> Входит в чат", "login": name})
         return make_response(("", 200, options_headers))
 
 @app.route("/logout", methods=["POST", "OPTIONS"])
@@ -53,6 +56,7 @@ def logout():
         return make_response(("", 500))
     if name in names:
         names.remove(name)
+        messages.append({"message": u">> Покидает чат", "login": name})
         return make_response(("", 200, options_headers))
     else:
         return make_response(("", 204, options_headers))
@@ -63,7 +67,7 @@ def get_messages(num):
     if request.method == "OPTIONS":
         return make_response(("", 200, options_headers))
     else:
-        for second in range(10):
+        for second in range(60):
             delta = len(messages) - num
             print "# delta %s" % delta
             if delta:
@@ -76,8 +80,6 @@ def get_messages(num):
             time.sleep(1)
         # return empty response for timeout
         return make_response(("", 200, options_headers))
-
-
 
 @app.route("/messages/count", methods=["GET", "OPTIONS"])
 def get_messages_count():
