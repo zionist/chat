@@ -2,19 +2,20 @@ package controllers;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import common.Constants;
+import models.LoggedUser;
 import play.*;
 import play.mvc.*;
 import play.db.*;
 
 import views.html.*;
 
+import javax.activation.DataSource;
 import java.util.Dictionary;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 public class Application extends Controller {
-
-    // private static final DataSource ds = DB.getDatasource();
 
     private static void SetHeaders() {
         for (String key: Constants.headers.keySet()) {
@@ -40,6 +41,10 @@ public class Application extends Controller {
     }
 
     public static Result count() {
-        return ok("0");
+        LoggedUser user= new LoggedUser();
+        user.setLogin("test1");
+        user.save();
+        List<LoggedUser> users = LoggedUser.find().all();
+        return ok("0" + users.get(0).getLogin());
     }
 }
