@@ -2,6 +2,7 @@ package models;
 
 import java.util.*;
 import javax.persistence.*;
+import javax.validation.Constraint;
 
 import play.db.ebean.*;
 import play.data.format.*;
@@ -29,3 +30,4 @@ public class LoggedUser extends Model {
         return this.login;
     }
 }
+
