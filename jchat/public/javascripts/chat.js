@@ -90,16 +90,20 @@ function load_messages() {
             messages_count = parseInt(messages_count) + parseInt(data.length);
             for (var i = 0; i < data.length; i++ ) {
                 lines = lines + data[i]['login'] + ": " + data[i]['message'] + "\n";
-            }
+            };
             $("textarea#chat_area").val(lines);
             $('textarea#chat_area').scrollTop($('textarea#chat_area')[0].scrollHeight);
+            // recurcieve call
+            load_messages();
         };
+    }
+    var error = function (data) {
         // recurcieve call
         load_messages();
     }
     // load_messages_count();
     url = URLS['message'] + messages_count;
-    send_get_async(url, success);
+    send_get_async(url, success, error);
 }
 
 function login() {
