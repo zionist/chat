@@ -132,7 +132,7 @@ public class Application extends Controller {
                 return ok(answer);
             }
         }
-        return ok("");
+        return forbidden();
     }
 
     public static Result count() {
