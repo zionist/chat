@@ -1,0 +1,8 @@
+textarea#chat_area {
+    height:500px;
+    resize:none;
+}
+
+h3 {
+    margin-top: 0;
+}
